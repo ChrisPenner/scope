@@ -1,0 +1,92 @@
+MAIN
+1. Command Loop
+	Menu from which to select a command.
+	Pre: None
+	Post: Loop until exit
+
+	while True:
+		print "Please choose a command, options are ADD, LOOKUP, OPEN, CLOSE, or EXIT"
+		input = input()
+		**Fancy regex stuff here**
+		run designated command.
+
+	Commands:
+	A. ADD()
+		print "Which database would you like to add this to?"
+		print (DB-list)
+		db = input
+		print "What type of entry is this?"
+		print (type-list)
+		type = input
+		switch(type):
+			entry = new *datatype*
+		for field in entry.fields:
+			enter info
+		print "Please list comma separated tags for this item":
+		entry.tags = input
+		db.entries.append(entry)
+		for tag in entry.tags:
+			tag.entries.append(entry)
+
+	B. LOOKUP()
+		print "Please type relevant tags/titles of DB entries"
+		query = input
+		**regex magic**
+		if *query* in tags:
+			matches.append(tag)
+		print reduce(tags/matches intersection)
+		print "Please choose a number or search again"
+		**regex magic**
+		printEntry(entry)
+		print "Type EDIT or MENU"
+		inp = input
+		if inp = 'EDIT':
+			edit(entry)
+		else if inp = 'MENU':
+			return
+
+	C. OPEN()
+		print "Choose a DB from the list to add to search, or type "new" to create a new one."
+		db = input
+		if db = 'new':
+			print "Name the new DB"
+			db = input
+			databases.append(new DB(db))
+		if db in databases:
+			DB.open.append(db)
+		else:
+			print "Sorry, try again"
+			loop.
+
+	D. CLOSE
+		print "Choose a DB from the list to remove from search"
+		print databases.open
+		db = input
+		if db is in databases.open:
+			databases.open.remove(db)
+		else:
+			print "sorry, that is not an open db"
+
+	E. TEMPLATE
+		print "Please choose a name"
+		name = input
+		template = new Template()
+		template.name = name
+		print "Extend an existing template? (y/n)"
+		if 'y':
+			print "Extend which template?"
+			print templates
+			parent = input
+			template.fields = parent.fields.clone()
+		else:
+			print "Please list fields to add. DONE when finished.""
+			field = input
+			while field != "DONE":
+				template.fields.add(input)
+				print name "was added"
+				field = input
+			templates.append(template)
+			print name "was created and added to templates list"
+
+4. Edit Mode
+	-Edit existing DB Entry (will be tricky on cmd line)

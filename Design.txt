@@ -1,0 +1,38 @@
+scope
+=====
+"A small personal database application in Python."
+
+*** Command line app ***
+MAIN
+1. Command Loop
+	-Main hub, user chooses commands to use from here
+	Commands:
+	A. ADD
+		i. Ask user for name, type, content, some tags, and also which DB to add to.
+		ii. Then add the entry, building the DB instance and adding references to all relevant places (tag banks, search index)
+	B. LOOKUP
+		i. Ask for a title and/or one or more tags to identify an entry with, list all valid matches logically
+	C. OPEN
+		i. Open a given DB, (that is, make it a part of searches)
+	D. CLOSE
+		i. Close a given DB, (i.e. remove it from searches)
+	E. TEMPLATE
+		i. Create and manage templates.
+
+2. Entry Composition Mode
+	-Here you build an entry
+	A. Choose type from list (note, textdoc, shopping list, airline ticket, book idea etc.)
+	B. Step through each needed content type
+		a. e.g. note: Title, Note. or airline ticket: Trip Name, TKT #, flight company, etc.
+	C. Add tags
+	D. Submit (and add to DB)
+
+3. Template Composition Mode
+	-Here you build a template
+	A. Add to existing template? (y/n)
+		i. if yes, load in all fields from existing template then continue to C.
+	B. Create new template
+		i. Begin adding field names one by one.
+
+4. Edit Mode
+	-Edit existing DB Entry (will be tricky on cmd line)
