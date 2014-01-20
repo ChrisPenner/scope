@@ -1,0 +1,44 @@
+scope - Object and Data Structure
+=====
+Different objects and their hierarchy and interaction mechanics
+
+PROFILE:Class
+	Highest level, contains all info pertaining to a specific user.
+
+	databases:Library
+		Library object consisting of all database categories (Work, Home, etc) keyed by name
+		name:DB object
+
+		DB()
+			name:String
+			tags:Library
+				library consisting of tag keys corresponding to SET objects (populated with references to Entry objects that have each tag)
+
+			entries:SET (or Library? Title Keys?)
+				A set object containing all entries in this db as Entry objects.
+
+				Entry:Subclass(extends Entry class, generic definition given)
+					name:String
+					type:String (template name)
+					fields:Library
+						library containing all field objects keyed by field name
+
+						Field:Class:
+							name:String
+							type: (Image, Text, Array, ?? etc.)
+					tags:SET
+						set containing all tags associated.
+	openDatabases:Set
+		Set containing all 'OPEN' DBs
+
+	templates:Library
+		Library containing all known templates keyed by name.
+
+		Template:Class
+			name: String
+			fields:Library
+				library containing all associated field objects keyed by field name
+			tags:SET
+				set of default tag associations to this template
+
+
