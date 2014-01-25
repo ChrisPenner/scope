@@ -7,7 +7,6 @@ PROFILE:Class
 
 	databases:Library
 		Library object consisting of all database categories (Work, Home, etc) keyed by name
-		name:DB object
 
 		DB()
 			name:String
