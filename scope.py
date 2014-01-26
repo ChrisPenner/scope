@@ -1,11 +1,13 @@
 #!python3
 #scope...in python 3.3
+
 DISP = '~ '
 PROMPT = '> '
 
 class Profile(object):
     """High-level object containing all program data for a specific user"""
     def __init__(self):
+        # templates is a library containing all defined templates by name
         self.templates = 	{
         						'basic':Template('basic',{'note':Field('note', Field.TYPE_TEXT)}, set())
         					}
@@ -13,7 +15,7 @@ class Profile(object):
         self.databases = {'home':Database('home', self.templates), 'work':Database('work',self.templates)}
         # openDatabases is a set containing all DBs open for searching
         self.openDatabases = set()
-        # templates is a library containing all defined templates by name
+        return
 
     # High Level Functions:
     def createDB(self,name):
@@ -51,10 +53,23 @@ class Utils(object):
 	"""Utility class containing handy functions"""
 	def __init__(self):
 		pass
+		return
 
 	def formatTags(tagString):
-		#TODO: need function that works on a string and returns a list of tags. ['tag1','tag2']
-		pass
+		if tagString == '':
+			return set()
+
+		# Split by comma separator
+		tagList = tagString.split(',')
+		# drop leading and trailing whitespace
+		tagList = [tag.lstrip(' ').rstrip(' ') for tag in tagList]
+		# kill any null tags that slipped through
+		while '' in tagList:
+			tagList.remove('')	
+		tags = set()
+		for tag in tagList:
+			tags.add(tag)
+		return tags
 
 class Database(object):
 	"""High-level object containing one complete database"""
@@ -62,9 +77,10 @@ class Database(object):
 		self.name = name
 		# tags is a library of tagnames keyed to sets containing entry titles with those tags
 		self.tags = {}
-		self.entries = set()
+		self.entries = {}
 		#templates is a REFERENCE to the 'profile' templates library
 		self.templates = templates
+		return
 
 	def addEntry(self):
 		"""Adds one entry to this database"""
@@ -82,12 +98,23 @@ class Database(object):
 		title = input(PROMPT + "Title: ")
 		entry = self.entryFromTemplate(title,self.templates[templateChoice])
 		for field in entry.fields:
-			entry.fields[field] = input(PROMPT + field + ': ')
-			for tag in Utils.formatTags(input("Tags (Comma Separated): ")):
-				entry.tags.add(tag)
-				#TODO:Finish up.
-			#TODO: add entry to DB
-			#TODO: add cross reference from global tags to this entry
+			entry.fields[field].content = input(PROMPT + field + ': ')
+		# Get newTags from formatTags as a set
+		newTags = Utils.formatTags(input("Tags (Comma Separated): ").lower())
+		entry.tags = entry.tags.union(newTags)
+		self.crossRefTags(entry)
+		self.entries[entry.name] = entry
+		return
+
+	def crossRefTags(self,entry):
+		"""Adds cross Reference to Entry in DB tag bank (for easy searching)"""
+		# Check if each tag exists, if it does, add an entry, otherwise key it to a set.
+		for tag in entry.tags:
+			if tag in self.tags:
+				self.tags[tag].add(entry.name)
+			else:
+				self.tags[tag] = set([entry.name])
+		return		
 
 	def entryFromTemplate(self, name, template):
 		entry = Entry(name)
@@ -101,6 +128,7 @@ class Entry(object):
 		self.name = name
 		self.fields = {}
 		self.tags = set()
+		return
 
 class Field(object):
 	"""Basic field class with a given field type"""
@@ -109,6 +137,8 @@ class Field(object):
 	def __init__(self, name, fieldType):
 		self.name = name
 		self.fieldType = fieldType
+		self.content = ''
+		return
 
 class Template(object):
 	"""Consists of a list of fields and tags that are associated with a given template"""
@@ -116,15 +146,17 @@ class Template(object):
 		self.templateName = templateName
 		self.fields = fields.copy() #Lib obj ATTN: will probably need to Deep copy this
 		self.tags = tags.copy() #Set obj
+		return
 
-# Initialize: Eventually replace this with loading a saved profile...
-profile = Profile()
+
 # Main loop functions
 def mainAdd(profile):
 	db = profile.selectDatabase("add")
 	db.addEntry()
+	return
 
-
+# Initialize: Eventually replace this with loading a saved profile...
+profile = Profile()
 
 def main():
 	commands = { 	"add":mainAdd,
@@ -138,10 +170,14 @@ def main():
 		print("Please choose a command from the list: ")
 		for command in commands:
 			print(DISP + command)
-			userCommand = input(PROMPT).lower()
-			if userCommand in commands:
-				commands[userCommand](profile)
-			else:
-				print("Sorry, don't recognize '%s', try again." %(userCommand))
+		print(DISP + 'quit')
+		userCommand = input(PROMPT).lower()
+		if userCommand == 'quit' or userCommand == 'exit':
+			break
+		if userCommand in commands:
+			commands[userCommand](profile)
+		else:
+			print("Sorry, don't recognize '%s', try again." %(userCommand))
+	return
 
 main()
