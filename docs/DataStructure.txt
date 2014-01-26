@@ -8,15 +8,16 @@ PROFILE:Class
 	databases:Library
 		Library object consisting of all database categories (Work, Home, etc) keyed by name
 
-		DB()
+		Database:Class
 			name:String
 			tags:Library
 				library consisting of tag keys corresponding to SET objects (populated with references to Entry objects that have each tag)
 
-			entries:SET (or Library? Title Keys?)
-				A set object containing all entries in this db as Entry objects.
+			entries:Library (title keys)
+				A library object containing all entries in this db as Entry objects.
 
-				Entry:Subclass(extends Entry class, generic definition given)
+				Entry:Class
+					Main entry type, can be built on the fly using templates
 					name:String
 					type:String (template name)
 					fields:Library
@@ -25,6 +26,7 @@ PROFILE:Class
 						Field:Class:
 							name:String
 							type: (Image, Text, Array, ?? etc.)
+							content: field content as string
 					tags:SET
 						set containing all tags associated.
 	openDatabases:Set
@@ -39,5 +41,3 @@ PROFILE:Class
 				library containing all associated field objects keyed by field name
 			tags:SET
 				set of default tag associations to this template
-
-

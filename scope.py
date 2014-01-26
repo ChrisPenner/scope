@@ -1,8 +1,8 @@
 #!python3
 #scope...in python 3.3
 
-DISP = '~ '
-PROMPT = '> '
+DISP = '~ ' # Prompt used to display lists
+PROMPT = '> ' # Prompt used for user input
 
 class Profile(object):
     """High-level object containing all program data for a specific user"""
@@ -12,9 +12,12 @@ class Profile(object):
         						'basic':Template('basic',{'note':Field('note', Field.TYPE_TEXT)}, set())
         					}
         # databases contains all DBs for this user, init with Home and Work DBs
-        self.databases = {'home':Database('home', self.templates), 'work':Database('work',self.templates)}
+        self.databases = 	{
+        						'home':Database('home', self.templates), 
+        						'work':Database('work', self.templates),
+        					}
         # openDatabases is a set containing all DBs open for searching
-        self.openDatabases = set()
+        self.openDatabases = set(self.databases)
         return
 
     # High Level Functions:
@@ -51,11 +54,9 @@ class Profile(object):
 
 class Utils(object):
 	"""Utility class containing handy functions"""
-	def __init__(self):
-		pass
-		return
 
 	def formatTags(tagString):
+		"""Formats 'tagString' into a set of individual tags"""
 		if tagString == '':
 			return set()
 
@@ -117,16 +118,18 @@ class Database(object):
 		return		
 
 	def entryFromTemplate(self, name, template):
-		entry = Entry(name)
+		"""Creates an entry instance from a given entry 'template' object"""
+		entry = Entry(name, template.templateName)
 		entry.fields = template.fields.copy() #ATTN: will probably need to Deep copy this
 		entry.tags = template.tags.copy()
 		return entry
 
 class Entry(object):
 	"""Basic DB-entry class, typically based on a Template"""
-	def __init__(self, name):
+	def __init__(self, name, entryType):
 		self.name = name
 		self.fields = {}
+		self.entryType = entryType
 		self.tags = set()
 		return
 
@@ -151,6 +154,7 @@ class Template(object):
 
 # Main loop functions
 def mainAdd(profile):
+	"""selects database, then adds a new entry to it"""
 	db = profile.selectDatabase("add")
 	db.addEntry()
 	return
@@ -159,6 +163,7 @@ def mainAdd(profile):
 profile = Profile()
 
 def main():
+	"""Main command loop"""
 	commands = { 	"add":mainAdd,
 					# "lookup":profile.lookupEntry,
 					# "open":profile.openDB,
