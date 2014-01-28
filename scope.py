@@ -17,14 +17,15 @@ class Profile(object):
         						'work':Database('work', self.templates),
         					}
         # openDatabases is a set containing all DBs open for searching
-        self.openDatabases = set(self.databases)
+        self.openDatabases = set(self.databases.values())
         return
 
     # High Level Functions:
     def createDB(self,name):
     	"""Creates a new db with 'name'"""
-    	db = Database(name)
+    	db = Database(name, self.templates)
     	self.databases[name] = db
+    	self.openDatabases.add(db)
     	return
 
     def selectDatabase(self, command):
@@ -78,6 +79,7 @@ class Database(object):
 		self.name = name
 		# tags is a library of tagnames keyed to sets containing entry titles with those tags
 		self.tags = {}
+		# Entries keyed by name
 		self.entries = {}
 		#templates is a REFERENCE to the 'profile' templates library
 		self.templates = templates
@@ -159,13 +161,76 @@ def mainAdd(profile):
 	db.addEntry()
 	return
 
+def mainSearch(profile):
+	entry = querySearch(profile)
+	if entry is not None:
+		print("Title: ", entry.name)
+		for field in entry.fields:
+			print (field, ": ", entry.fields[field].content)
+		#editEntry(Entry)
+		pass
+	else:
+		return
+
+
+def querySearch(profile):
+	while True:
+		print("Please enter a search term or tag, 'quit' to exit.")
+		query = input(PROMPT)
+		if query == 'quit':
+			return None
+
+		# split query into word list by spaces
+		queries = query.lstrip(' ').rstrip(' ').split(' ')
+		# iterate through entries in all databases and search titles adding matches to a set
+		results = set()
+		for db in profile.openDatabases:
+			for entryName in db.entries:
+				for word in queries:
+					if word in entryName or entryName in word:
+						# Add entry in a tuple with db (db, entry)
+						results.add(db.entries[entryName])
+			for tag in db.tags:
+				if word in tag or tag in word:
+					for entryName in db.tags[tag]:
+						results.add(db.entries[entryName])
+		# Change set to an indexable list
+		resultList = [x for x in results]
+		if len(resultList) == 0:
+			print("Sorry! No results!")
+			continue
+		print("Choose a result by number, 'retry' or 'quit'.")
+		# Print out results with number values
+		i = 0
+		for result in resultList:
+			i += 1
+			print(DISP, i, result.name,'(', ', '.join(result.tags), ')')
+
+		while True:	
+			entry = None
+			choice = input(PROMPT)
+			if choice == 'retry':
+				break
+			elif choice == 'quit':
+				return None
+			elif choice.isdigit() == True and 0 < int(choice) <= i:
+				entry = resultList[i-1]
+				break
+			else:
+				print("Sorry, that's not a valid option, try again")
+				continue
+		if entry is None:
+			continue
+		else:
+			return entry
+
 # Initialize: Eventually replace this with loading a saved profile...
 profile = Profile()
 
 def main():
 	"""Main command loop"""
 	commands = { 	"add":mainAdd,
-					# "lookup":profile.lookupEntry,
+					"search":mainSearch,
 					# "open":profile.openDB,
 					# "close":profile.closeDB,
 					# "template":profile.template,
@@ -184,5 +249,17 @@ def main():
 		else:
 			print("Sorry, don't recognize '%s', try again." %(userCommand))
 	return
+
+# populate home db with some entries for testing
+basicTemplate = profile.templates['basic']
+testEntry1 = profile.databases['home'].entryFromTemplate('shopping list', basicTemplate)
+field = Field('note',Field.TYPE_TEXT)
+field.content = 'Buy milk, eggs, and bacon!'
+testEntry1.fields['note'] = field
+testEntry1.tags.add('shopping')
+testEntry1.tags.add('tuesday')
+testEntry1.tags.add('city')
+
+profile.databases['home'].entries['shopping list'] = testEntry1
 
 main()
