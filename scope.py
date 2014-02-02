@@ -1,8 +1,24 @@
 #!python3
 #scope...in python 3.3
+import pickle
 
 DISP = '~ ' # Prompt used to display lists
 PROMPT = '> ' # Prompt used for user input
+SAVE_LOCATION = 'save.pkl'
+
+#Global Functions
+
+def saveToFile(obj, dest):
+	f = open(dest, 'wb')
+	pickle.dump(obj, f)
+	f.close()
+	return
+
+def loadFromFile(dest):
+	f = open(dest, 'rb')
+	obj = pickle.load(f)
+	f.close()
+	return obj
 
 class Profile(object):
     """High-level object containing all program data for a specific user"""
@@ -30,7 +46,7 @@ class Profile(object):
 
     def selectDatabase(self, command):
     	"""Generic selection function, 'command' is simply what's displayed, returns a db object for another function to use."""
-    	print("From which Database would you like to " + command + " an entry?")
+    	print("Which Database would you like to " + command + " an entry?")
     	potentialDB = None
     	while True: #loop until valid input
     	# Print all databases
@@ -122,7 +138,7 @@ class Database(object):
 	def entryFromTemplate(self, name, template):
 		"""Creates an entry instance from a given entry 'template' object"""
 		entry = Entry(name, template.templateName)
-		entry.fields = template.fields.copy() #ATTN: will probably need to Deep copy this
+		entry.fields = template.fields.copy() #TODO: will probably need to Deep copy this
 		entry.tags = template.tags.copy()
 		return entry
 
@@ -149,7 +165,7 @@ class Template(object):
 	"""Consists of a list of fields and tags that are associated with a given template"""
 	def __init__(self,templateName,fields,tags):
 		self.templateName = templateName
-		self.fields = fields.copy() #Lib obj ATTN: will probably need to Deep copy this
+		self.fields = fields.copy() #Lib obj TODO: will probably need to Deep copy this
 		self.tags = tags.copy() #Set obj
 		return
 
@@ -171,6 +187,10 @@ def mainSearch(profile):
 		pass
 	else:
 		return
+
+def mainSave(profile):
+	saveToFile(profile, SAVE_LOCATION)
+	return
 
 
 def querySearch(profile):
@@ -224,13 +244,19 @@ def querySearch(profile):
 		else:
 			return entry
 
-# Initialize: Eventually replace this with loading a saved profile...
-profile = Profile()
-
 def main():
 	"""Main command loop"""
+
+	# Initialize: Attempt to load file, if none exists make a new one
+	try:
+		profile = loadFromFile(SAVE_LOCATION)
+	except FileNotFoundError:
+		print('No existing file found, creating new one')
+		profile = Profile()
+
 	commands = { 	"add":mainAdd,
 					"search":mainSearch,
+					"save":mainSave,
 					# "open":profile.openDB,
 					# "close":profile.closeDB,
 					# "template":profile.template,
@@ -246,20 +272,23 @@ def main():
 			break
 		if userCommand in commands:
 			commands[userCommand](profile)
+			saveToFile(profile, SAVE_LOCATION)
+			print("Data SAVED")
 		else:
 			print("Sorry, don't recognize '%s', try again." %(userCommand))
 	return
 
-# populate home db with some entries for testing
-basicTemplate = profile.templates['basic']
-testEntry1 = profile.databases['home'].entryFromTemplate('shopping list', basicTemplate)
-field = Field('note',Field.TYPE_TEXT)
-field.content = 'Buy milk, eggs, and bacon!'
-testEntry1.fields['note'] = field
-testEntry1.tags.add('shopping')
-testEntry1.tags.add('tuesday')
-testEntry1.tags.add('city')
+# # populate home db with some entries for testing
+# basicTemplate = profile.templates['basic']
+# testEntry1 = profile.databases['home'].entryFromTemplate('shopping list', basicTemplate)
+# field = Field('note',Field.TYPE_TEXT)
+# field.content = 'Buy milk, eggs, and bacon!'
+# testEntry1.fields['note'] = field
+# testEntry1.tags.add('shopping')
+# testEntry1.tags.add('tuesday')
+# testEntry1.tags.add('city')
 
-profile.databases['home'].entries['shopping list'] = testEntry1
+# profile.databases['home'].entries['shopping list'] = testEntry1
+
 
 main()
