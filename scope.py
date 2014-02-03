@@ -2,9 +2,12 @@
 #scope...in python 3.3
 import pickle
 
+# Constants
 DISP = '~ ' # Prompt used to display lists
 PROMPT = '> ' # Prompt used for user input
+SEPARATOR = '-------------------------------------'
 SAVE_LOCATION = 'save.pkl'
+SAVE_BACKUP = 'save.pkl.bak'
 
 #Global Functions
 
@@ -50,7 +53,7 @@ class Profile(object):
     	potentialDB = None
     	while True: #loop until valid input
     	# Print all databases
-	    	for name in self.databases:
+	    	for name in sorted(self.databases):
 	    		print(DISP + name)
 	    	# Collect user input
 	    	workingDB = input(PROMPT).lower()
@@ -105,7 +108,7 @@ class Database(object):
 		"""Adds one entry to this database"""
 		print("Which template would you like to use?")
 		while True:
-			for t in self.templates:
+			for t in sorted(self.templates):
 				print(DISP, t)
 			templateChoice = input(PROMPT).lower()
 			if templateChoice not in self.templates:
@@ -124,6 +127,22 @@ class Database(object):
 		self.crossRefTags(entry)
 		self.entries[entry.name] = entry
 		return
+
+	def editEntry(self, entry):
+		"""Edit or delete database entry"""
+		print("'edit', 'delete', 'tags' or 'main'?")
+		userChoice = input(PROMPT).lower()
+		if userChoice == 'delete':
+			self.deleteEntry(entry)
+			print(entry.name, "has been deleted; 'undo' or 'main'.")
+		return		
+
+	def deleteEntry(self, entry):
+		for tag in entry.tags:
+			self.tags[tag].remove(entry.name)
+		self.entries.pop(entry.name)
+		return
+			
 
 	def crossRefTags(self,entry):
 		"""Adds cross Reference to Entry in DB tag bank (for easy searching)"""
@@ -151,6 +170,14 @@ class Entry(object):
 		self.tags = set()
 		return
 
+	def printSelf(self):
+		print(SEPARATOR)
+		print("Title: ", self.name)
+		for field in self.fields:
+			print (field, ": ", self.fields[field].content)
+		print(SEPARATOR)
+		return
+		
 class Field(object):
 	"""Basic field class with a given field type"""
 	TYPE_TEXT = "text"
@@ -178,13 +205,10 @@ def mainAdd(profile):
 	return
 
 def mainSearch(profile):
-	entry = querySearch(profile)
+	(entry, db) = querySearch(profile)
 	if entry is not None:
-		print("Title: ", entry.name)
-		for field in entry.fields:
-			print (field, ": ", entry.fields[field].content)
-		#editEntry(Entry)
-		pass
+		entry.printSelf()
+		db.editEntry(entry)
 	else:
 		return
 
@@ -198,7 +222,7 @@ def querySearch(profile):
 		print("Please enter a search term or tag, 'quit' to exit.")
 		query = input(PROMPT)
 		if query == 'quit':
-			return None
+			return (None,None)
 
 		# split query into word list by spaces
 		queries = query.lstrip(' ').rstrip(' ').split(' ')
@@ -209,13 +233,14 @@ def querySearch(profile):
 				for word in queries:
 					if word in entryName or entryName in word:
 						# Add entry in a tuple with db (db, entry)
-						results.add(db.entries[entryName])
+						results.add((db.entries[entryName], db))
 			for tag in db.tags:
 				if word in tag or tag in word:
 					for entryName in db.tags[tag]:
-						results.add(db.entries[entryName])
+						results.add((db.entries[entryName], db))
 		# Change set to an indexable list
 		resultList = [x for x in results]
+		resultList.sort(key=lambda x: x[1].name)
 		if len(resultList) == 0:
 			print("Sorry! No results!")
 			continue
@@ -224,7 +249,7 @@ def querySearch(profile):
 		i = 0
 		for result in resultList:
 			i += 1
-			print(DISP, i, result.name,'(', ', '.join(result.tags), ')')
+			print(DISP, i, result[1].name, result[0].name,'(', ', '.join(result[0].tags), ')')
 
 		while True:	
 			entry = None
@@ -232,9 +257,10 @@ def querySearch(profile):
 			if choice == 'retry':
 				break
 			elif choice == 'quit':
-				return None
+				return (None, None)
 			elif choice.isdigit() == True and 0 < int(choice) <= i:
-				entry = resultList[i-1]
+				entry = resultList[i-1][0]
+				db = resultList[i-1][1]
 				break
 			else:
 				print("Sorry, that's not a valid option, try again")
@@ -242,7 +268,7 @@ def querySearch(profile):
 		if entry is None:
 			continue
 		else:
-			return entry
+			return (entry, db)
 
 def main():
 	"""Main command loop"""
@@ -251,12 +277,17 @@ def main():
 	try:
 		profile = loadFromFile(SAVE_LOCATION)
 	except FileNotFoundError:
-		print('No existing file found, creating new one')
-		profile = Profile()
+		try:
+			profile = loadFromFile(SAVE_BACKUP)
+			print("DB profile not found, loaded last backup.")
+		except FileNotFoundError:
+			print('No existing file found, creating new one')
+			profile = Profile()
+	saveToFile(profile, SAVE_BACKUP)
 
 	commands = { 	"add":mainAdd,
 					"search":mainSearch,
-					"save":mainSave,
+					#"save":mainSave,
 					# "open":profile.openDB,
 					# "close":profile.closeDB,
 					# "template":profile.template,
@@ -272,8 +303,8 @@ def main():
 			break
 		if userCommand in commands:
 			commands[userCommand](profile)
+			#Save after operations
 			saveToFile(profile, SAVE_LOCATION)
-			print("Data SAVED")
 		else:
 			print("Sorry, don't recognize '%s', try again." %(userCommand))
 	return
