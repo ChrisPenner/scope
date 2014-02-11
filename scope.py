@@ -1,4 +1,4 @@
-#!python3
+#!/usr/bin/python3
 #scope...in python 3.3
 import pickle
 
@@ -209,8 +209,7 @@ def mainSearch(profile):
 	if entry is not None:
 		entry.printSelf()
 		db.editEntry(entry)
-	else:
-		return
+	return
 
 def mainSave(profile):
 	saveToFile(profile, SAVE_LOCATION)
@@ -229,15 +228,16 @@ def querySearch(profile):
 		# iterate through entries in all databases and search titles adding matches to a set
 		results = set()
 		for db in profile.openDatabases:
-			for entryName in db.entries:
-				for word in queries:
-					if word in entryName or entryName in word:
-						# Add entry in a tuple with db (db, entry)
-						results.add((db.entries[entryName], db))
-			for tag in db.tags:
-				if word in tag or tag in word:
-					for entryName in db.tags[tag]:
-						results.add((db.entries[entryName], db))
+			if len(db.entries) > 0:
+				for entryName in db.entries:
+					for word in queries:
+						if word in entryName or entryName in word:
+							# Add entry in a tuple with db (db, entry)
+							results.add((db.entries[entryName], db))
+				for tag in db.tags:
+					if word in tag or tag in word:
+						for entryName in db.tags[tag]:
+							results.add((db.entries[entryName], db))
 		# Change set to an indexable list
 		resultList = [x for x in results]
 		resultList.sort(key=lambda x: x[1].name)
@@ -283,7 +283,6 @@ def main():
 		except FileNotFoundError:
 			print('No existing file found, creating new one')
 			profile = Profile()
-	saveToFile(profile, SAVE_BACKUP)
 
 	commands = { 	"add":mainAdd,
 					"search":mainSearch,
@@ -300,6 +299,7 @@ def main():
 		print(DISP + 'quit')
 		userCommand = input(PROMPT).lower()
 		if userCommand == 'quit' or userCommand == 'exit':
+			saveToFile(profile, SAVE_BACKUP)
 			break
 		if userCommand in commands:
 			commands[userCommand](profile)
