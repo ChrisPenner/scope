@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 #scope...in python 3.3
 import pickle
+#import gui_scope.py
 
 # Constants
 DISP = '~ ' # Prompt used to display lists
@@ -276,11 +277,11 @@ def main():
 	# Initialize: Attempt to load file, if none exists make a new one
 	try:
 		profile = loadFromFile(SAVE_LOCATION)
-	except FileNotFoundError:
+	except IOError:
 		try:
 			profile = loadFromFile(SAVE_BACKUP)
 			print("DB profile not found, loaded last backup.")
-		except FileNotFoundError:
+		except IOError:
 			print('No existing file found, creating new one')
 			profile = Profile()
 
