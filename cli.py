@@ -2,7 +2,6 @@
 #scope...in python 3.3
 import pickle
 import core
-#import gui_scope.py
 
 # Constants
 class CONST(object):
