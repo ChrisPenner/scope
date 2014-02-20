@@ -34,6 +34,8 @@ class mainWindowHandler(object):
 		self.databases = profile.databases
 		self.liDB = ListInter(ui.listDB)
 		self.liTags = ListInter(ui.listTags)
+		self.tabResult = TableInter(ui.tableResult, 0, 0)
+
 
 	def initMainWindow(self):
 		# Allow multi selections on selectors
@@ -43,15 +45,25 @@ class mainWindowHandler(object):
 		# populate DB list
 		self.liDB.addItems(self.profile.databases)
 
+		# When DB choices are changed, repopulate tags list
+		self.liDB.qtList.itemSelectionChanged.connect(self.liDB.selectionChanged)
 		self.liDB.qtList.itemSelectionChanged.connect(self.setTags)
+
+		# Keep track of tags selection to allow tag selection persistence
+		self.liTags.qtList.itemClicked.connect(self.liTags.selectionChanged)
+
+		# self.tabResult.qtList.
+
+
+
 
 	def setTags(self):
 		#print(self.mw.sender().objectName())
 		self.liTags.clear()
-		databases = [x.text() for x in self.mw.sender().selectedItems()]
-		allTags = set()
+		databases = [x.text() for x in self.liDB.qtList.selectedItems()]
 		for db in databases:
 			self.liTags.addItems(self.databases[db].tags)
+			self.liTags.setSelection()
 
 class ListInter(object):
 	"""docstring for ListInter"""
@@ -59,9 +71,28 @@ class ListInter(object):
 		super(ListInter, self).__init__()
 		self.qtList = qtList
 		self.items = set()
+		self.selected = set()
 
 	def getSelected(self):
 		return [x.text() for x in self.qtList.selectedItems()]
+
+	def selectionChanged(self):
+		length = self.qtList.count()
+		for i in range(0,length):
+			item = self.qtList.item(i)
+			if item.isSelected():
+				self.selected.add(item.text())
+			elif item.text() in self.selected:
+				self.selected.remove(item.text())
+
+	def setSelection(self):
+		length = self.qtList.count()
+		for i in range(0,length):
+			item = self.qtList.item(i)
+			if item.text() in self.selected:
+				item.setSelected(True)
+			else:
+				item.setSelected(False)
 
 	def addItems(self, items):
 		for item in items:
@@ -83,6 +114,15 @@ class ListInter(object):
 				break
 		# Mirror set with list		
 		self.items.clear()
+
+
+class TableInter(object):
+	def __init__(self, qtList, rows, columns):
+		super(TableInter, self).__init__()
+		self.qtList = qtList
+
+		self.qtList.setRowCount(rows)
+		self.qtList.setColumnCount(columns)
 
 		
 
