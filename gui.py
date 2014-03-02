@@ -34,8 +34,8 @@ class mainWindowHandler(object):
 		self.databases = profile.databases
 		self.liDB = ListInter(ui.listDB)
 		self.liTags = ListInter(ui.listTags)
-		self.tabResult = TableInter(ui.tableResult, 0, 0)
-
+		self.tabResult = TableInter(ui.tableResult, 0, 0, 300, 500)
+		self.btnEditEntry = ui.btnEditEntry
 
 	def initMainWindow(self):
 		# Allow multi selections on selectors
@@ -51,10 +51,10 @@ class mainWindowHandler(object):
 
 		# Keep track of tags selection to allow tag selection persistence
 		self.liTags.qtList.itemClicked.connect(self.liTags.selectionChanged)
+		# self.liTags.qtList.itemSelectionChanged.connect(self.liTags.selectionChanged)
 
-		# self.tabResult.qtList.
-
-
+		#temp
+		self.liTags.qtList.itemSelectionChanged.connect(self.displayEntries)
 
 
 	def setTags(self):
@@ -64,6 +64,14 @@ class mainWindowHandler(object):
 		for db in databases:
 			self.liTags.addItems(self.databases[db].tags)
 			self.liTags.setSelection()
+
+	def displayEntries(self):
+		entries = self.profile.getMatchingEntries(self.liDB.getSelected(), self.liTags.getSelected())
+		# for entry in entries:
+		# 	print(entry.name)
+		# Display valid entries in Table:
+		self.tabResult.setElements(entries)
+
 
 class ListInter(object):
 	"""docstring for ListInter"""
@@ -117,13 +125,39 @@ class ListInter(object):
 
 
 class TableInter(object):
-	def __init__(self, qtList, rows, columns):
+	def __init__(self, qtTable, rows, columns, width, height):
 		super(TableInter, self).__init__()
-		self.qtList = qtList
+		self.qtTable = qtTable
 
-		self.qtList.setRowCount(rows)
-		self.qtList.setColumnCount(columns)
+		self.qtTable.setRowCount(rows)
+		self.qtTable.setColumnCount(columns)
+		
+		self.resize()
 
+	def resize(self):
+		self.qtTable.resizeColumnsToContents()
+
+	def setElements(self, entries):
+		rows = len(entries)
+		columns = 2
+		self.qtTable.setRowCount(rows)
+		# Two Columns for now
+		self.qtTable.setColumnCount(columns)
+
+		# Assign Values
+		cellRows = []
+		for entry in entries:
+			title = QtGui.QTableWidgetItem()
+			title.setText(entry.name)
+			data = QtGui.QTableWidgetItem()
+			data.setText(entry.fields['note'].content)
+			cellRows.append((title,data))
+
+		for i in range(0,rows):
+			for j in range(0,columns):
+				self.qtTable.setItem(i,j,cellRows[i][j])
+
+		self.resize()
 		
 
 def addListeners(ui):
