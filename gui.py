@@ -132,10 +132,27 @@ class TableInter(object):
 		self.qtTable.setRowCount(rows)
 		self.qtTable.setColumnCount(columns)
 		
+		self.initSizing()
+
 		self.resize()
 
 	def resize(self):
-		self.qtTable.resizeColumnsToContents()
+		self.qtTable.horizontalHeader().hide()
+		self.qtTable.verticalHeader().hide()
+
+		# self.qtTable.resizeColumnsToContents()
+		self.qtTable.resizeRowsToContents()
+		self.qtTable.horizontalHeader().setStretchLastSection(True)
+		# self.qtTable.verticalHeader().setStretchLastSection(True)
+		# self.qtTable.horizontalHeader().resizeMode(0)
+		# self.qtTable.verticalHeader().resizeMode(0)
+
+	def initSizing(self):
+		# self.qtTable.verticalHeader().resizeMode(1)
+		self.qtTable.horizontalHeader().resizeMode(1)
+		self.qtTable.verticalHeader().setDefaultSectionSize(70);
+		
+		self.qtTable.setWordWrap(True)
 
 	def setElements(self, entries):
 		rows = len(entries)
