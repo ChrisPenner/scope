@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 import pickle
+from copy import deepcopy
 
 # Constants --------------
 class CONST(object):
@@ -29,6 +30,22 @@ class Profile(object):
         self.databases[name] = db
         self.openDatabases.add(db)
         return
+
+    def getDatabases(self):
+        return self.databases
+
+    def getMatchingEntries(self, matchDBs, matchTags):
+        entries = set()
+        for db in matchDBs:
+            if db in self.databases:
+                db = self.databases[db]
+                for tag in matchTags:
+                    if tag in db.tags:
+                        for entry in db.tags[tag]:
+                            entries.add(db.entries[entry])
+        return entries
+
+
 
     def querySearch(self, query):
         # split query into word list by spaces
@@ -111,8 +128,8 @@ class Database(object):
     def entryFromTemplate(self, name, template):
         """Creates an entry instance from a given entry 'template' object"""
         entry = Entry(name, template.templateName)
-        entry.fields = template.fields.copy() #TODO: will probably need to Deep copy this
-        entry.tags = template.tags.copy()
+        entry.fields = deepcopy(template.fields) #TODO: will probably need to Deep copy this
+        entry.tags = deepcopy(template.tags)
         return entry
 
 class Entry(object):
