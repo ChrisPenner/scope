@@ -34,20 +34,24 @@ def search(profile):
         if query == 'quit':
             return None 
         results = profile.querySearch(query)
-        
-        if len(results) == 0:
+        # results is a list of tuples (entry, db)
+        numResults = len(results)
+
+        if numResults == 0:
             print("Sorry! No results!")
             continue
-        # Change set to an indexable list
-        resultList = [x for x in results]
-        resultList.sort(key=lambda x: x[1].name)
+
+        # Make dictionary keyed with indexes
+        resultDict = {}
+        i = 1
+        for r in results:
+            resultDict[i] = r
+            i+=1
 
         print("Choose a result by number, 'retry' or 'quit'.")
         # Print out results with number values
-        i = 0
-        for result in resultList:
-            i += 1
-            print(CONST.DISP, i, result[1].name, result[0].name,'(', ', '.join(result[0].tags), ')')
+        for i in range(1,numResults + 1):
+           print(CONST.DISP, i, resultDict[i][1].name, resultDict[i][0].name,'(', ', '.join(resultDict[i][0].tags), ')') 
 
         while True: 
             entry = None
@@ -56,9 +60,9 @@ def search(profile):
                 break
             elif choice == 'quit':
                 return None 
-            elif choice.isdigit() == True and 0 < int(choice) <= i:
-                entry = resultList[i-1][0]
-                db = resultList[i-1][1]
+            elif choice.isdigit() == True and 0 < int(choice) <= numResults:
+                entry = resultDict[int(choice)][0]
+                db = resultDict[int(choice)][1]
                 break
             else:
                 print("Sorry, that's not a valid option, try again")
