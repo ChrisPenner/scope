@@ -60,7 +60,7 @@ class mainWindowHandler(object):
 	def setTags(self):
 		#print(self.mw.sender().objectName())
 		self.liTags.clear()
-		databases = [x.text() for x in self.liDB.qtList.selectedItems()]
+		databases = sorted([x.text() for x in self.liDB.qtList.selectedItems()])
 		for db in databases:
 			self.liTags.addItems(self.databases[db].tags)
 			self.liTags.setSelection()
@@ -103,7 +103,7 @@ class ListInter(object):
 				item.setSelected(False)
 
 	def addItems(self, items):
-		for item in items:
+		for item in sorted(items):
 			if item not in self.items:
 				self.items.add(item)
 				self.qtList.addItem(item)
@@ -163,7 +163,7 @@ class TableInter(object):
 
 		# Assign Values
 		cellRows = []
-		for entry in entries:
+		for entry in sorted(entries,key=lambda x:x.name):
 			title = QtGui.QTableWidgetItem()
 			title.setText(entry.name)
 			data = QtGui.QTableWidgetItem()
